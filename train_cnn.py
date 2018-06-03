@@ -1,16 +1,17 @@
 import tensorflow as tf
 
 from get_data import load_resized_data
-from train import load_data
+
 
 learning_rate = 0.001
 num_steps = 20
 
 image_side_size = 28
-num_input = image_side_size * image_side_size
+num_input = 784
 num_classes = 6
 dropout = 0.0
 display_step = 10
+batch_size = 10
 
 # tf Graph input
 X = tf.placeholder(tf.float32, [None, num_input])
