@@ -41,5 +41,3 @@ for i in range(0, 6):
         data_dir = 'data/{}'.format(i)
         print('Saving Image: {}'.format(image_count))
         cv2.imwrite(os.path.join(data_dir + '/{}.jpg'.format(image_count)), state_images[image_count])
-    # Temporary
-    break
