@@ -1,9 +1,10 @@
 import tensorflow as tf
+import cv2
 
-from get_data import load_data, batch_data
+from get_data import load_data, batch_data, convert_to_label_array
 
 learning_rate = 0.001
-num_steps = 1000
+num_steps = 500
 
 image_side_size = 28
 num_input = image_side_size * image_side_size
@@ -120,7 +121,29 @@ with tf.Session() as sess:
                   "{:.3f}".format(acc))
 
     print("Optimization Finished!")
-    batch_x, batch_y = batch_data(data, batch_index=min(batch_index + 1, max_batch_index))
-    testing_accuracy = sess.run(accuracy, feed_dict={X: batch_x, Y: batch_y, keep_prob: 1.0})
+    testing_accuracy = sess.run(accuracy, feed_dict={X: data[0], Y: data[1], keep_prob: 1.0})
     print("Testing Accuracy:", testing_accuracy)
 
+    print('Running Camera')
+    cam = cv2.VideoCapture(0)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    frame_counter = 0
+    last_prediction = 0
+
+    while True:
+        frame_counter += 1
+        ret_val, img = cam.read()
+        # Predict every 10th frame
+        if frame_counter % 10 == 0:
+            changed_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            scaled_image = cv2.resize(changed_image, (28, 28))
+            flat_image = scaled_image.flatten()
+            # for i in range(0, 6):
+            label_arr = convert_to_label_array(0)
+            predicted_value = prediction.eval(feed_dict={X: [flat_image], Y: [label_arr], keep_prob: 0.5})
+            actual_number = list(predicted_value[0]).index(1.0)
+            last_prediction = actual_number
+        cv2.putText(img, 'Predicted: {}'.format(last_prediction), (10, 300), font, 1, (255, 255, 255))
+        cv2.imshow('Recognition Test', img)
+        if cv2.waitKey(1) == 27:
+            break

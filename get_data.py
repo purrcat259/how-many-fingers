@@ -35,7 +35,6 @@ def load_data():
 def batch_data(data, batch_index=0, batch_size=10):
     low = min(batch_index * batch_size, len(data[0]) - batch_size)
     high = min([len(data[0]), batch_index * batch_size + batch_size])
-    print(low, high)
     return data[0][low:high], data[1][low:high]
 
 
