@@ -1,13 +1,12 @@
 import tensorflow as tf
 
-from get_data import load_resized_data
-
+from get_data import load_data, batch_data
 
 learning_rate = 0.001
-num_steps = 20
+num_steps = 1000
 
 image_side_size = 28
-num_input = 784
+num_input = image_side_size * image_side_size
 num_classes = 6
 dropout = 0.0
 display_step = 10
@@ -94,6 +93,9 @@ accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
 # Initialize the variables (i.e. assign their default value)
 init = tf.global_variables_initializer()
+data = load_data()
+max_batch_index = len(data[0]) // batch_size
+batch_index = 0
 
 # Start training
 with tf.Session() as sess:
@@ -101,8 +103,11 @@ with tf.Session() as sess:
     # Run the initializer
     sess.run(init)
 
-    for step in range(1, num_steps+1):
-        batch_x, batch_y = load_resized_data(side_size=image_side_size)
+    for step in range(1, num_steps + 1):
+        batch_x, batch_y = batch_data(data, batch_index=batch_index)
+        batch_index += 1
+        if batch_index > max_batch_index:
+            batch_index = 0
         # Run optimization op (backprop)
         sess.run(train_op, feed_dict={X: batch_x, Y: batch_y, keep_prob: 0.8})
         if step % display_step == 0 or step == 1:
@@ -115,9 +120,7 @@ with tf.Session() as sess:
                   "{:.3f}".format(acc))
 
     print("Optimization Finished!")
-
-    images, labels = load_resized_data(side_size=image_side_size)
-
-    testing_accuracy = sess.run(accuracy, feed_dict={X: images, Y: labels, keep_prob: 1.0})
+    batch_x, batch_y = batch_data(data, batch_index=min(batch_index + 1, max_batch_index))
+    testing_accuracy = sess.run(accuracy, feed_dict={X: batch_x, Y: batch_y, keep_prob: 1.0})
     print("Testing Accuracy:", testing_accuracy)
 
